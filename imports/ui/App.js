@@ -2,6 +2,7 @@ import React, { createElement, Component } from 'react';
 import ReactDOM from "react-dom";
 import { withTracker } from 'meteor/react-meteor-data';
 import { Tasks } from '../api/tasks.js';
+import { Meteor } from 'meteor/meteor';
 import AccountsUIWrapper from "../ui/AccountsUIWrapper";
 
 import Task from './Task.js';
@@ -22,13 +23,18 @@ export class App extends Component {
                 createElement("header", {},
                     createElement("h1", {}, "Todo List  " + this.props.incompleteCount),
                     createElement("label", { className: "hide-completed" },
-                        createElement("input", { type: "checkbox",
-                        checked: this.state.hideCompleted, onClick: this.toggleHideCompleted }),
+                        createElement("input", {
+                            type: "checkbox",
+                            checked: this.state.hideCompleted, onClick: this.toggleHideCompleted
+                        }),
                         "HIDE COMPLETED TASKS"),
-                        createElement(AccountsUIWrapper),
-                    createElement("form", { className: "new-task", onSubmit: this.handleSubmit },
-                        createElement("input", { type: "text", ref: "textInput",
-                        placeholder: "Type to add new tasks" })),
+                    createElement(AccountsUIWrapper),
+                    this.props.currentUser ?
+                        createElement("form", { className: "new-task", onSubmit: this.handleSubmit },
+                            createElement("input", {
+                                type: "text", ref: "textInput",
+                                placeholder: "Type to add new tasks"
+                            })) : "",
                     createElement("ul", {}, this.renderTasks())
                 )
             )
@@ -39,17 +45,22 @@ export class App extends Component {
         event.preventDefault();
         // using the react ref to find the text field
         const text = ReactDOM.findDOMNode(this.refs.textInput).value.trim();
-        Tasks.insert({ text, createdAt: new Date() });
+        Tasks.insert({
+            text,
+            createdAt: new Date(),
+            owner: Meteor.userId(),
+            username: Meteor.user().username
+        });
         ReactDOM.findDOMNode(this.refs.textInput).value = "";
     }
 
     toggleHideCompleted = () => {
-        this.setState( { hideCompleted : !this.state.hideCompleted });
+        this.setState({ hideCompleted: !this.state.hideCompleted });
     }
 
     renderTasks = () => {
         let filteredTasks = this.props.tasks;
-        if( this.state.hideCompleted ) {
+        if (this.state.hideCompleted) {
             filteredTasks = filteredTasks.filter(task => !task.checked);
         }
         return filteredTasks.map((task) => (
@@ -61,5 +72,6 @@ export default withTracker(() => {
     return {
         tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch(),
         incompleteCount: Tasks.find({ checked: { $ne: true } }).count(),
+        currentUser: Meteor.user()
     };
 })(App);
