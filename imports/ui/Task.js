@@ -9,8 +9,8 @@ export default class Task extends Component {
 
         return (
             createElement("li", { className: taskClassName },
-                createElement("button", { className: "delete", onClick: this.deleteTask } ),
-                createElement("input", { type: "checkbox", checked: this.props.task.checked, onClick: this.toggleChecked }),
+                createElement("button", { className: "delete", onClick: this.deleteTask }, "DELETE"),
+                createElement("input", { type: "checkbox", checked: !!this.props.task.checked, onClick: this.toggleChecked }),
                 createElement("span", { className: "text" }, this.props.task.text)
             )
         )
