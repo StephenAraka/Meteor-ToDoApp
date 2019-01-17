@@ -21,3 +21,4 @@ react-meteor-data
 crosswalk
 accounts-ui
 accounts-password
+meteortesting:mocha
