@@ -58,12 +58,26 @@ export class App extends Component {
         if (this.state.hideCompleted) {
             filteredTasks = filteredTasks.filter(task => !task.checked);
         }
-        return filteredTasks.map((task) => (
-            <Task key={task._id} task={task} />));
+        return filteredTasks.map((task) =>  {
+                const currentUserId = this.props.currentUser && this.props.currentUser._id;
+                const showPrivateButton = task.owner === currentUserId;
+           
+                return (
+                  <Task
+                    key={task._id}
+                    task={task}
+                    showPrivateButton={showPrivateButton}
+                  />
+                );
+              });
     }
 }
 
 export default withTracker(() => {
+    // meteor.piblish registers the tasks on the server
+    // Meteor.subscribe gets the tasks publication to the client
+    Meteor.subscribe("tasks");
+
     return {
         tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch(),
         incompleteCount: Tasks.find({ checked: { $ne: true } }).count(),
